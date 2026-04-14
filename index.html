@@ -1,33 +1,35 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FitBot — Зарабатывай в зале</title>
-    <style>
-        body { font-family: Arial; background: #0a0a0a; color: white; margin:0; padding:20px; text-align:center; }
-        h1 { color:#00ff9d; }
-        .balance { font-size:32px; color:#00ff9d; margin:20px 0; }
-        button { width:100%; padding:16px; margin:12px 0; font-size:18px; background:#00ff9d; color:black; border:none; border-radius:12px; }
-    </style>
+    <title>Gym Check</title>
 </head>
 <body>
-    <h1>FitBot</h1>
-    <p>Занимайся — зарабатывай токены</p>
-    
-    <div class="balance">Баланс: <span id="balance">248</span> FIT</div>
-    
-    <button onclick="checkIn()">✅ Я в зале! Получить токены</button>
-    <button onclick="alert('История чек-инов')">📍 История посещений</button>
-    
+    <h1>Проверка геолокации...</h1>
+
     <script>
-        function checkIn() {
-            if (confirm("Отправить геопозицию чтобы подтвердить, что ты в зале?")) {
-                alert("✅ Геопозиция принята!\n\nТы заработал 15 FIT токенов 🎉");
-                let bal = parseInt(document.getElementById("balance").innerText);
-                document.getElementById("balance").innerText = bal + 15;
-            }
-        }
+        navigator.geolocation.getCurrentPosition((position) => {
+
+            fetch("http://localhost:5000/check-location", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    lat: position.coords.latitude,
+                    lon: position.coords.longitude,
+                    user_id: Telegram.WebApp.initDataUnsafe.user.id
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === "ok") {
+                    document.body.innerHTML = "✅ Ты в зале! +10 токенов";
+                } else {
+                    document.body.innerHTML = "❌ Ты не в зале";
+                }
+            });
+
+        });
     </script>
 </body>
 </html>
